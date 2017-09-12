@@ -316,5 +316,29 @@ defmodule Chess do
     end    
   end
 
+  ########
+  # MOVE #
+  ########
+
+  # m0 helper: set value
+
+  def m00(a, i, j, x) do
+    a
+    |-1> :array.get(i)
+    |-1> :array.set(j, x)
+    |1> :array.set(i, a)
+  end
+
+  # move i, j to i1, j1
+
+  def m0(a, {i, j}, {i1, j1}) do
+    if Enum.any?(s0(a, i, j), fn x -> x == {i1, j1} end) do
+      a
+      |> m00(i, j, {-1, -1})
+      |> m00(i1, j1, g0(a, i, j))
+    else
+      a
+    end
+  end
 
 end
