@@ -1,0 +1,2 @@
+%{"param_pipe": {:hex, :param_pipe, "0.1.2", "b758c9d73cff4cfe8e52c362bfe115b77240afb2b20f6ebd14e3589cf93ecac2", [:mix], [], "hexpm"},
+  "printex": {:hex, :printex, "0.1.2", "eb9a55403dcc894183c62e5655e1ed789cf7b087b6b035ccfcee188461c3fb59", [], [], "hexpm"}}
