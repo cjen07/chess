@@ -46,7 +46,7 @@ defmodule Chess do
     end)
   end
 
-  # init two lists, two status field and a toggle
+  # init two lists and log
   def i2() do
     %{
       l0: [
@@ -85,9 +85,13 @@ defmodule Chess do
             {7, {6, 6}},
             {7, {6, 8}},
           ],
-      s: {false, false},
-      t: 0
+      log: []
     }
+  end
+
+  # init a new game
+  def i3() do
+    {i1(), i2(), 0}
   end
 
   #######
@@ -316,6 +320,10 @@ defmodule Chess do
     end    
   end
 
+  def s1(a, {i, j}, {i1, j1}) do
+    Enum.any?(s0(a, i, j), fn x -> x == {i1, j1} end)
+  end
+
   ########
   # MOVE #
   ########
@@ -329,16 +337,98 @@ defmodule Chess do
     |1> :array.set(i, a)
   end
 
-  # move i, j to i1, j1
+  # m0 helper: move but not check
 
-  def m0(a, {i, j}, {i1, j1}) do
-    if Enum.any?(s0(a, i, j), fn x -> x == {i1, j1} end) do
-      a
-      |> m00(i, j, {-1, -1})
-      |> m00(i1, j1, g0(a, i, j))
+  def m01(a, {i, j}, {i1, j1}) do
+    a
+    |> m00(i, j, {-1, -1})
+    |> m00(i1, j1, g0(a, i, j))
+  end
+
+  # move i, j to i1, j1: a
+
+  def m0(a, p, p1) do
+    if s1(a, p, p1) do
+      m01(a, p, p1)
     else
       a
     end
+  end
+
+  # move i, j to i1, j1: d: l0/l1 and log
+
+  def m1(d, o, p, p1) do
+    d1 =
+      Map.get(d, :"l#{o}")
+      |> Enum.find(fn x -> elem(x, 1) == p end)
+      |> elem(0)
+      |0> (fn x -> Map.update!(d, :log, fn y -> [{x, p, p1} | y] end) end).()
+    d1
+    |> Map.get(:"l#{o}")
+    |> Enum.map(fn x -> if elem(x, 1) == p, do: {elem(x, 0), p1}, else: x end)
+    |-1> Map.put(d1, :"l#{o}")
+  end
+
+  #########
+  # CHECK #
+  #########
+
+  def c00(d, o, t) do
+    Map.get(d, :"l#{o}")
+    |> Enum.find(fn x -> elem(x, 0) == t end)
+    |> elem(1)
+  end
+
+  def c01(a, d, o) do
+    c00(d, 1 - o, 5) |> (fn {i, j} -> m00(a, i, j, {1, 1 - o}) end).()
+  end
+
+  def c02(d, o) do
+    [1, 2, 5, 6, 7] |> Enum.map(fn x -> c00(d, 1 - o, x) end)
+  end
+
+  def c0(a, d, o) do
+    {c01(a, d, o), c00(d, o, 5)}
+    |1> Enum.reduce_while(c02(d, o), fn p, {a, p1} -> 
+      if s1(a, p, p1) do
+        {:halt, false}
+      else
+        {:cont, {a, p1}}
+      end
+    end)
+    |> is_tuple()
+  end
+
+  def c1(a, p = {i, j}, p1, d, o) do
+    a1 = m0(a, p, p1)
+    d1 = m1(d, o, p, p1)
+    c0(a1, d1, o)
+    |-1> Kernel.&&(s1(a, p, p1))
+    |-1> Kernel.&&(o == g0(a, i, j) |> elem(1))
+    |> (fn x -> {x, a1, d1} end).()
+  end
+
+  def c2({a, d, o}) do
+    Map.get(d, :"l#{o}")
+    |> Enum.any?(fn {_  , p = {i, j}} -> 
+      s0(a, i, j) |> Enum.any?(fn p1 -> c1(a, p, p1, d, o) end)
+    end)
+  end
+
+  ##########
+  # ACTION #
+  ##########
+
+
+  # s = i3; p1 elem(s, 0)
+  # {:ok, s = {a, d, o}} = a0(s, {2, 1}, {2, 4}); p1 a
+  # {:ok, s = {a, d, o}} = a0(s, {7, 1}, {7, 4}); p1 a
+  # {:ok, s = {a, d, o}} = a0(s, {2, 4}, {6, 4}); p1 a
+  # {:ok, s = {a, d, o}} = a0(s, {9, 3}, {8, 4}); p1 a
+
+  def a0(s = {a, d, o}, p, p1) do
+    c1(a, p, p1, d, o)
+    |> (fn {x, a1, d1} -> if x, do: {:ok, {a1, d1, 1 - o}}, else: {:error, s} end).()
   end
 
 end
