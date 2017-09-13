@@ -94,6 +94,16 @@ defmodule Chess do
     {i1(), i2(), 0}
   end
 
+  # init a new game agent
+  def i4() do
+    s = i3()
+    case Agent.start_link(fn -> s end, name: __MODULE__) do
+      {:ok, _} -> :ok
+      _ -> Agent.update(__MODULE__, fn _ -> s end)
+    end
+    p1(elem(s, 0))
+  end
+
   #######
   # GET #
   #######
@@ -429,6 +439,29 @@ defmodule Chess do
   def a0(s = {a, d, o}, p, p1) do
     c1(a, p, p1, d, o)
     |> (fn {x, a1, d1} -> if x, do: {:ok, {a1, d1, 1 - o}}, else: {:error, s} end).()
+  end
+
+  # i4
+  # a1({2, 1}, {2, 4})
+  # a1({7, 1}, {7, 4})
+  # a1({2, 4}, {6, 4})
+  # a1({9, 3}, {8, 4})
+  def a1(p, p1) do
+    Agent.update(__MODULE__, fn s ->
+      case a0(s, p, p1) do
+        {:ok, s = {a, _, o}} ->
+          p1(a)
+          case c2(s) do
+            true -> s
+            false ->
+              IO.ANSI.format([:yellow, "player #{o} wins\n"], true) |> IO.write()
+              s
+          end
+        _ ->
+          IO.ANSI.format([:red, "invalid move\n"], true) |> IO.write()
+          s
+      end
+    end)
   end
 
 end
