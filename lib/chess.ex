@@ -445,6 +445,7 @@ defmodule Chess do
   # a1({2, 1}, {2, 4})
   # a1({7, 1}, {7, 4})
   # a1({2, 4}, {6, 4})
+  # a1({9, 4}, {8, 4}) invalid move
   # a1({9, 3}, {8, 4})
   def a1(p, p1) do
     Agent.update(__MODULE__, fn s ->
@@ -462,6 +463,185 @@ defmodule Chess do
           s
       end
     end)
+  end
+
+  # i4
+  # a2 "炮八平五"
+  # a2 "炮2平5"
+  # a2 "炮五进四"
+  # a2 "将5进1" invalid move
+  # a2 "士4进5"
+
+  def a2(l) do
+    Agent.update(__MODULE__, fn s = {_, d, o} ->
+      case t0(l, d) do
+        :ok -> s
+        {p, p1, ^o} ->
+          case a0(s, p, p1) do
+            {:ok, s = {a, _, o}} ->
+              p1(a)
+              case c2(s) do
+                true -> s
+                false ->
+                  IO.ANSI.format([:yellow, "player #{o} wins\n"], true) |> IO.write()
+                  s
+              end
+            _ ->
+              IO.ANSI.format([:red, "invalid move\n"], true) |> IO.write()
+              s
+          end
+        _ ->
+          IO.ANSI.format([:red, "invalid move\n"], true) |> IO.write()
+          s
+      end
+    end)
+  end
+
+  #############
+  # TRANSLATE #
+  #############
+
+  def t00(c) do
+    try do
+      String.to_integer(c)
+    rescue
+      _ -> 0
+    else
+      _ -> 1
+    end
+  end
+
+  def t010(c, o) do
+    if o == 0 do
+      case c do
+        "一" -> 1
+        "二" -> 2
+        "三" -> 3
+        "四" -> 4
+        "五" -> 5
+        "六" -> 6
+        "七" -> 7
+        "八" -> 8
+        "九" -> 9
+      end
+    else
+      String.to_integer(c)
+    end
+  end
+
+  def t01(c, o) do
+    if o == 0 do
+      case c do
+        "一" -> 1
+        "二" -> 2
+        "三" -> 3
+        "四" -> 4
+        "五" -> 5
+        "六" -> 6
+        "七" -> 7
+        "八" -> 8
+        "九" -> 9
+      end
+      |> (fn x -> 9 - x end).()
+    else
+      String.to_integer(c) - 1
+    end
+  end
+
+  def t020(c) do
+    case c do
+      "车" -> 1
+      "马" -> 2
+      "相" -> 3
+      "象" -> 3
+      "士" -> 4
+      "仕" -> 4
+      "将" -> 5
+      "帅" -> 5
+      "炮" -> 6
+      "兵" -> 7
+      "卒" -> 7
+    end      
+  end
+
+  def t02([c0, c1, c2, c3], d) do
+
+    o = t00(c3)
+
+    {f1, f2, f3} =
+      case c0 do
+        "前" -> {1, t020(c1), o}
+        "后" -> {1, t020(c0), 1 - o}
+         _ -> {0, t020(c0), t01(c1, o)}
+      end
+
+    f4 =
+      case c2 do
+        "进" -> o
+        "退" -> 1 - o
+        "平" -> 2
+      end
+
+    {i, j} = 
+      case f1 do
+        0 -> 
+          Map.get(d, :"l#{o}")
+          |> Enum.find(fn {t, {_, j}} -> t == f2 && j == f3 end)
+          |> elem(1)
+        1 ->
+          Map.get(d, :"l#{o}")
+          |> Enum.reduce_while(nil, fn {t, p = {i, _}}, acc -> 
+            cond do
+              t == f2 && acc == nil -> p
+              t == f2 ->
+                cond do
+                  f3 == 0 && elem(acc, 0) > i -> {:halt, acc}
+                  f3 == 1 && elem(acc, 0) < i -> {:halt, acc}
+                  true -> {:halt, p}
+                end
+              true -> {:cont, acc}
+            end
+          end)
+      end
+
+    {i1, j1} =
+      case f4 do
+        2 -> {i, t01(c3, o)}
+        1 -> 
+          cond do
+            f2 < 2 || f2 > 4 -> {i - t010(c3, o), j}
+            f2 == 2 -> 
+              f5 = t01(c3, o)
+              {i - (3 - abs(f5 - j)), f5}
+            f2 == 3 -> {i - 2, t01(c3, o)}
+            f2 == 4 -> {i - 1, t01(c3, o)}
+          end
+        0 ->
+          cond do
+            f2 < 2 || f2 > 4 -> {i + t010(c3, o), j}
+            f2 == 2 -> 
+              f5 = t01(c3, o)
+              {i + (3 - abs(f5 - j)), f5}
+            f2 == 3 -> {i + 2, t01(c3, o)}
+            f2 == 4 -> {i + 1, t01(c3, o)}
+          end
+      end
+    {{i, j}, {i1, j1}, o}
+  end
+
+  def t0(l, d) do
+    cs = String.codepoints(l)
+    case length(cs) do
+      4 -> 
+        try do
+          t02(cs, d)
+        rescue
+          _ -> 
+            IO.ANSI.format([:red, "invalid move\n"], true) |> IO.write()
+        end
+      _ -> 
+        IO.ANSI.format([:red, "unsupported format\n"], true) |> IO.write()
+    end
   end
 
 end
