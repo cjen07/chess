@@ -1,21 +1,17 @@
 # Chess
 
-**TODO: Add description**
+### a chinese chess (xiangqi) simulator
 
-## Installation
+### Erlang/OTP 20.1 elixir 1.5.3
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `chess` to your list of dependencies in `mix.exs`:
+### usage example (in iex)
 
 ```elixir
-def deps do
-  [
-    {:chess, "~> 0.1.0"}
-  ]
-end
+  i4
+  a2 "炮八平五"
+  a2 "炮2平5"
+  a2 "炮五进四"
+  a2 "将5进1" # invalid move
+  a2 "士4进5"
 ```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/chess](https://hexdocs.pm/chess).
 
