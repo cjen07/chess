@@ -2,6 +2,8 @@
 
 ### a chinese chess (xiangqi) simulator
 
+### ongoing: game solver
+
 ### Erlang/OTP 20.1 elixir 1.5.3
 
 ### usage example (in iex)

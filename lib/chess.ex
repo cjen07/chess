@@ -420,7 +420,7 @@ defmodule Chess do
 
   def c2({a, d, o}) do
     Map.get(d, :"l#{o}")
-    |> Enum.any?(fn {_  , p = {i, j}} -> 
+    |> Enum.any?(fn {_, p = {i, j}} -> 
       s0(a, i, j) |> Enum.any?(fn p1 -> c1(a, p, p1, d, o) end)
     end)
   end

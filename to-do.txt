@@ -1,0 +1,3 @@
+search for sequences of killing moves
+
+all satisfiable moves

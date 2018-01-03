@@ -1,0 +1,29 @@
+aims to cover main ideas in chess.ex
+
+core:
+
+the state is a tuple
+1: board
+2: pieces
+3: next turn
+
+board positions is tuple
+1: piece category 1-7
+2: owner info 0/1
+
+pieces is a map
+l0: player0
+l1: player1
+log: moves
+
+l0/l1 are lists of tuples
+{c, {x, y}}
+c is category
+x is vertical scale from bottom to top is 0 to 9
+y is horizontal scale from right to left is 0 to 8
+
+helper:
+
+p0: print a single piece
+p1: print the board
+
