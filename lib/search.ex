@@ -25,9 +25,20 @@ defmodule Search do
   end
 
   def all({a, b, o}) do
+    no = 1 - o
     l = Map.get(b, :"l#{o}")
-    a = Enum.map(l, fn {_, {i, j}} -> s0(a, i, j) end)
-    IO.inspect a
-    :ok
+    s = Enum.map(l, fn {_, {i, j}} -> s0(a, i, j) end)
+    z = Enum.zip(l, s)
+    Enum.map(z, fn x ->
+      {{t, p1}, l} = x
+      Enum.map(l, fn p ->
+        na = m0(a, p1, p)
+        p1(na)
+        IO.puts "\n"
+        nb = m1(b, o, p1, p)
+        {na, nb, no}
+      end)
+    end)
+    
   end
 end
