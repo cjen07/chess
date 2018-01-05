@@ -377,6 +377,9 @@ defmodule Chess do
     |> Map.get(:"l#{o}")
     |> Enum.map(fn x -> if elem(x, 1) == p, do: {elem(x, 0), p1}, else: x end)
     |-1> Map.put(d1, :"l#{o}")
+    |> Map.get(:"l#{1-o}")
+    |> Enum.filter(fn x -> elem(x, 1) != p1 end)
+    |-1> Map.put(d1, :"l#{1-o}")
   end
 
   #########

@@ -10,5 +10,6 @@ check if there is a king in board(if no gives the winner)
 
 given a move by p1 whenever p2 moves there is a move by p1 that there is no king of p2
 
-* king face to face
+* king face to face: done
 * repeated state
+* advanced prune framework
